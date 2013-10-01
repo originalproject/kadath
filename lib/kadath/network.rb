@@ -24,23 +24,48 @@ module Kadath
     def out(name)
       if exit_box.has_out?(name)
         @out = name
-      end # else exception
+        return self
+      else
+        fail "Exit box does not have an out with name #{name}"
+      end
     end
 
     def in(name)
       if entry_box.has_in?(name)
         @in = name
-      end # else exception
+        return self
+      else
+        fail "Entry box does not have an in with name #{name}"
+      end
+    end
+
+    def <<(network)
+      if @out && network.current_in
+        exit_node.connect_to(
+          network.entry_node,
+          nil, 
+          out: @out, 
+          in: network.current_in
+        )
+      end # TODO else exception
+    end
+
+    def entry_node
+      @graph.nodes.first
     end
 
     private
 
+    def exit_node
+      @graph.nodes.last
+    end
+
     def entry_box
-      @graph.nodes.first.properties[:box]
+      entry_node.properties[:box]
     end
 
     def exit_box
-      @graph.nodes.last.properties[:box]
+      exit_node.properties[:box]
     end
 
 =begin
