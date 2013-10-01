@@ -6,10 +6,10 @@ require 'kadath/version'
 Gem::Specification.new do |spec|
   spec.name          = "kadath"
   spec.version       = Kadath::VERSION
-  spec.authors       = ["TODO: Write your name"]
-  spec.email         = ["TODO: Write your email address"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
+  spec.authors       = ["Simon Break", "Matthew Simpson"]
+  spec.email         = ["matthewsimpson@gmail.com"]
+  spec.description   = %q{An opinionated ruby API for PureData}
+  spec.summary       = %q{An opinionated ruby API for PureData}
   spec.homepage      = ""
   spec.license       = "MIT"
 
@@ -20,4 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"
+  spec.add_development_dependency "mocha"
+
+  spec.add_dependency "turbine-graph"
 end
