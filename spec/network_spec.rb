@@ -22,32 +22,32 @@ describe Network do
     n.graph.nodes.first.key.must_equal "foo"
   end
 
-  it "has a current_out which defaults to the default out of the last box" do
+  it "has an out which defaults to the default out of the last box" do
     box = mock_box(default_out: :bar)
     n = Network.new(box)
-    n.current_out.must_equal :bar
+    n.out.must_equal :bar
   end
 
-  it "has a current_out which can be specified with out and returns network for chaining" do
+  it "has an out which can be specified with out and returns network for chaining" do
     box = mock_box
     box.expects(:has_out?).with(:baz).returns(true)
     n = Network.new(box)
     n.out(:baz).must_equal n
-    n.current_out.must_equal :baz
+    n.out.must_equal :baz
   end
 
-  it "has a current_in which defaults to the default in of the first box" do
+  it "has an in which defaults to the default in of the first box" do
     box = mock_box(default_in: :bar)
     n = Network.new(box)
-    n.current_in.must_equal :bar
+    n.in.must_equal :bar
   end
 
-  it "has a current_in which can be specified with in and returns network for chaining" do
+  it "has an in which can be specified with in and returns network for chaining" do
     box = mock_box
     box.expects(:has_in?).with(:baz).returns(true)
     n = Network.new(box)
     n.in(:baz).must_equal n
-    n.current_in.must_equal :baz
+    n.in.must_equal :baz
   end
 
   it "can be connected to another network via the default ins and outs" do
@@ -55,6 +55,20 @@ describe Network do
     box2 = mock_box(id: "box2", default_in: :baz)
     n = Network.new(box)
     n << Network.new(box2)
+    first_node = n.graph.nodes.first
+    first_node.key.must_equal "box1"
+    first_node.out.first.key.must_equal "box2"
+    connection = first_node.out_edges.first
+    connection.wont_be_nil
+    connection.properties[:out].must_equal :bar
+    connection.properties[:in].must_equal :baz
+  end
+  
+  it "can be connected to another network using the > symbol" do
+    box = mock_box(id: "box1", default_out: :bar)
+    box2 = mock_box(id: "box2", default_in: :baz)
+    n = Network.new(box)
+    n > Network.new(box2)
     first_node = n.graph.nodes.first
     first_node.key.must_equal "box1"
     first_node.out.first.key.must_equal "box2"
@@ -94,27 +108,52 @@ describe Network do
     -> { n.out(:bar) }.must_raise RuntimeError
   end
 
-  it "raises an exception if a network is connected that has no in to connect to"
-  it "raises an exception if it has no out and a network is connected to it"
-  it "has an entry node which is the node it was initialized with"
-  it "has an exit node which is the last node added"
+  it "raises an exception if a network is connected that has no in to connect to" do
+    box = mock_box(id: "box1", default_out: :bar)
+    box2 = mock_box(id: "box2")
+    n = Network.new(box)
+    -> { n << Network.new(box2) }.must_raise RuntimeError
+  end
 
-    # box1 = mock
-    # box1.expects(:out).once.returns(:out_1)
-    # box2 = mock
-    # box2.expects(:in).once
-    # n = Network.new(box)
-    # n << Network.
+  it "raises an exception if it has no out and a network is connected to it" do
+    box = mock_box(id: "box1")
+    box2 = mock_box(id: "box2", default_in: :baz)
+    n = Network.new(box)
+    -> { n << Network.new(box2) }.must_raise RuntimeError
+  end
 
-=begin  it "can have a box appended to it" do
-    n = Network.new
-    n << "box"
-    [
-      {
-        box: box,
-        connections: []
-      }
-    ]
-=end
+  it "has an in node which is the node it was initialized with" do
+    box = mock_box(id: "box1", default_out: :bar)
+    box2 = mock_box(id: "box2", default_in: :baz)
+    n = Network.new(box)
+    n << Network.new(box2)
+    n.in_node.key.must_equal "box1"
+  end
+
+  it "can assemble a network of multiple networks via default and specified connections" do
+    box = mock_box(id: "box1")
+    box.expects(:has_out?).with(:box1out).returns(true)
+    box2 = mock_box(id: "box2")
+    box2.expects(:has_in?).with(:box2in).returns(true)
+    box2.expects(:has_out?).with(:box2out).returns(true)
+    box3 = mock_box(id: "box3", default_in: :box3in, default_out: :box3out)
+    box4 = mock_box(id: "box4")
+    box4.expects(:has_in?).with(:box4in).returns(true)
+    n1 = Network.new(box)
+    n2 = Network.new(box2)
+    n3 = Network.new(box3)
+    n4 = Network.new(box4)
+    nn1 = n1.out(:box1out) << n2.in(:box2in)
+    nn2 = n3 << n4.in(:box4in)
+    n = nn1.out(:box2out) << nn2
+    first_node = n.graph.nodes.first
+    first_node.key.must_equal "box1"
+    second_node = first_node.out.first
+    second_node.key.must_equal "box2"
+    third_node = second_node.out.first
+    third_node.key.must_equal "box3"
+    fourth_node = third_node.out.first
+    fourth_node.key.must_equal "box4"    
+  end
 
 end

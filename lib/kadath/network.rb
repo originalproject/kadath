@@ -13,73 +13,73 @@ module Kadath
       @in = box.default_in
     end
 
-    def current_in
-      @in
-    end
-
-    def current_out
-      @out
-    end
-
-    def out(name)
-      if exit_box.has_out?(name)
+    # If invoked without a name, returns the currently selected
+    # out of the out box.
+    # If invoked with a name, sets the currently selected out of
+    # the out box and returns the network for chaining.
+    def out(name = nil)
+      if !name
+        @out
+      elsif out_box.has_out?(name)
         @out = name
-        return self
+        self
       else
-        fail "Exit box does not have an out with name #{name}"
+        fail "#{out_box.class.name} does not have an out with name #{name}"
       end
     end
 
-    def in(name)
-      if entry_box.has_in?(name)
+    # If invoked without a name, returns the currently selected
+    # in of the in box.
+    # If invoked with a name, sets the currently selected in of
+    # the in box and returns the network for chaining.
+    def in(name = nil)
+      if !name
+        @in
+      elsif in_box.has_in?(name)
         @in = name
-        return self
+        self
       else
-        fail "Entry box does not have an in with name #{name}"
+        fail "#{out_box.class.name} does not have an in with name #{name}"
       end
     end
 
+    # Merge another network with this one, attaching the out of
+    # this network to the in of the merged network, and then return
+    # this network for chaining.
+    # Raises an error if either of the required connection points
+    # are nil.
     def <<(network)
-      if @out && network.current_in
-        exit_node.connect_to(
-          network.entry_node,
-          nil, 
-          out: @out, 
-          in: network.current_in
-        )
-      end # TODO else exception
+      fail "Network does not have an out to connect to the network being attached" if !@out
+      fail "Network being attached does not have an in to connect this network to" if !network.in
+      out_node.connect_to(
+        network.in_node,
+        nil, 
+        out: @out,
+        in: network.in
+      )
+      network.graph.nodes.each { |n| @graph.add(n) }
+      self
     end
+    alias_method :>, :<<
 
-    def entry_node
+    # The node containing the currently selected in box.
+    def in_node
       @graph.nodes.first
     end
 
     private
 
-    def exit_node
+    def out_node
       @graph.nodes.last
     end
 
-    def entry_box
-      entry_node.properties[:box]
+    def in_box
+      in_node.properties[:box]
     end
 
-    def exit_box
-      exit_node.properties[:box]
+    def out_box
+      out_node.properties[:box]
     end
-
-=begin
-    def nodify(box)
-      name = box.class.name
-      Tree::TreeNode.new(name, box)
-      box.responds_to?(:in) && box.in.each do |in_name|
-        Tree::TreeNode.new("In #{in_name}") << node
-      end
-      box.responds_to?(:out) && box.out.each do |out_name|
-        node << Tree::TreeNode.new("Out #{out_name}")
-      end
-    end
-=end
 
   end
 
