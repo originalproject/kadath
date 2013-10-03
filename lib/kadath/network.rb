@@ -1,4 +1,5 @@
 require 'turbine'
+require 'superators19'
 
 module Kadath
 
@@ -48,7 +49,7 @@ module Kadath
     # this network for chaining.
     # Raises an error if either of the required connection points
     # are nil.
-    def <<(network)
+    def append(network)
       fail "Network does not have an out to connect to the network being attached" if !@out
       fail "Network being attached does not have an in to connect this network to" if !network.in
       out_node.connect_to(
@@ -60,7 +61,11 @@ module Kadath
       network.graph.nodes.each { |n| @graph.add(n) }
       self
     end
-    alias_method :>, :<<
+    alias_method :<<, :append
+
+    superator ">~" do |operand|
+      self.append(operand)
+    end
 
     # The node containing the currently selected in box.
     def in_node

@@ -23,4 +23,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "mocha"
 
   spec.add_dependency "turbine-graph"
+  spec.add_dependency "superators19"
 end

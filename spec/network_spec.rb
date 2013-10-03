@@ -64,11 +64,11 @@ describe Network do
     connection.properties[:in].must_equal :baz
   end
   
-  it "can be connected to another network using the > symbol" do
+  it "can be connected to another network using the >~ operator" do
     box = mock_box(id: "box1", default_out: :bar)
     box2 = mock_box(id: "box2", default_in: :baz)
     n = Network.new(box)
-    n > Network.new(box2)
+    n >~ Network.new(box2)
     first_node = n.graph.nodes.first
     first_node.key.must_equal "box1"
     first_node.out.first.key.must_equal "box2"
