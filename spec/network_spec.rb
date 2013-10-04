@@ -156,4 +156,61 @@ describe Network do
     fourth_node.key.must_equal "box4"    
   end
 
+  # it "can take in and out options to initialize" do
+  #   box = mock
+  #   box.expects(:id).returns("foo")
+  #   box.expects(:has_in?).with(:bar).returns(true)
+  #   box.expects(:has_out?).with(:baz).returns(true)
+  #   n = Network.new(box: box, in: :bar, out: :baz)
+  #   n.in.must_equal :bar
+  #   n.out.must_equal :baz
+  # end
+
+  it "can append a box" do
+    box = mock_box(id: "box1", default_out: :bar)
+    box2 = mock_box(id: "box2", default_in: :baz)
+    n = Network.new(box)
+    n >~ box2
+    first_node = n.graph.nodes.first
+    first_node.key.must_equal "box1"
+    first_node.out.first.key.must_equal "box2"
+    connection = first_node.out_edges.first
+    connection.wont_be_nil
+    connection.properties[:out].must_equal :bar
+    connection.properties[:in].must_equal :baz
+  end
+
+  it "can append an array with a box and specified ins and outs" do
+    box = mock_box(id: "box1", default_out: :box1out)
+    box2 = mock_box(id: "box2", default_in: :baz)
+    box2.expects(:has_in?).with(:box2in).returns(true)
+    box2.expects(:has_out?).with(:box2out).returns(true)
+    n = Network.new(box)
+    n >~ [:box2in, box2, :box2out]
+    first_node = n.graph.nodes.first
+    first_node.key.must_equal "box1"
+    first_node.out.first.key.must_equal "box2"
+    connection = first_node.out_edges.first
+    connection.wont_be_nil
+    connection.properties[:out].must_equal :box1out
+    connection.properties[:in].must_equal :box2in
+  end
+
+  it "can append an array with a network and specified ins and outs" do
+    box = mock_box(id: "box1", default_out: :box1out)
+    box2 = mock_box(id: "box2", default_in: :baz)
+    box2.expects(:has_in?).with(:box2in).returns(true)
+    box2.expects(:has_out?).with(:box2out).returns(true)
+    n = Network.new(box)
+    n2 = Network.new(box2)
+    n >~ [:box2in, n2, :box2out]
+    first_node = n.graph.nodes.first
+    first_node.key.must_equal "box1"
+    first_node.out.first.key.must_equal "box2"
+    connection = first_node.out_edges.first
+    connection.wont_be_nil
+    connection.properties[:out].must_equal :box1out
+    connection.properties[:in].must_equal :box2in
+  end
+
 end
