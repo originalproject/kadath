@@ -39,8 +39,6 @@ module Kadath
       n = Network.new(self)
       n.wire_to(thing)
     end
-    alias_method :<<, :wire_to
-    alias_method :append, :wire_to
 
   end
 end

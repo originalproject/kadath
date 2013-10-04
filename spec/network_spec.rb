@@ -228,4 +228,12 @@ describe Network do
     connection.properties[:in].must_equal :box2in
   end
 
+  it "can append a string which it turns into a PdBox" do
+    box = mock_box(id: "box1", default_out: :bar)
+    n = Network.new(box)
+    n >~ "faz"
+    first_node = n.graph.nodes.first
+    first_node.key.must_equal "box1"
+  end
+
 end
