@@ -1,6 +1,7 @@
 require 'turbine'
 
 require_relative 'wire_to_operator'
+require_relative 'pd_box'
 
 module Kadath
 
@@ -95,7 +96,7 @@ module Kadath
       if is_array?(thing)
         append_array(thing)
       else
-        append_network_or_box(thing)
+        append_thing(thing)
       end
       self
     end
@@ -109,11 +110,13 @@ module Kadath
 
     private
 
-    def append_network_or_box(thing, i = nil, o = nil)
+    def append_thing(thing, i = nil, o = nil)
       if is_network?(thing)
         append_network(thing, i, o)
       elsif is_box?(thing)
         append_box(thing, i, o)
+      elsif thing.is_a?(String)
+        append_string(thing, i, o)
       else
         fail "Cannot add #{thing.class.name} to network"
       end
@@ -149,7 +152,7 @@ module Kadath
       else
         fail "Appended arrays must have between 1 and 3 items"
       end
-      append_network_or_box(thing, i, o)
+      append_thing(thing, i, o)
     end
 
     def append_network(network, i = nil, o = nil)
@@ -184,6 +187,10 @@ module Kadath
 
     def append_box(box, i = nil, o = nil)
       append_network(Network.new(box), i, o)
+    end
+
+    def append_string(s, i = nil, o = nil)
+      append_box(PdBox.new(s), i, o)
     end
 
     def is_network?(thing)
