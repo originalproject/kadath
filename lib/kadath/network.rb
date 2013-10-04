@@ -1,9 +1,12 @@
 require 'turbine'
-require 'superators19'
+
+require_relative 'wire_to_operator'
 
 module Kadath
 
   class Network
+
+    include WireToOperator
 
     attr_reader :graph
 
@@ -12,6 +15,15 @@ module Kadath
       @graph.add(Turbine::Node.new(box.id, box: box))
       @out = box.default_out
       @in = box.default_in
+
+      # if box
+      #   @graph.add(Turbine::Node.new(box.id, box: box))
+      #   @out = box.default_out
+      #   @in = box.default_in
+      # else
+      #   @in = @out = nil
+      # end
+
       # box = options[:box]
       # if box 
       #   @graph.add(Turbine::Node.new(box.id, box: box))
@@ -79,7 +91,7 @@ module Kadath
     # and then return this network for chaining.
     # Raises an error if either of the required connection points
     # are nil.
-    def append(thing)
+    def wire_to(thing)
       if is_array?(thing)
         append_array(thing)
       else
@@ -87,11 +99,8 @@ module Kadath
       end
       self
     end
-    alias_method :<<, :append
-
-    superator ">~" do |operand|
-      self.append(operand)
-    end
+    alias_method :<<, :wire_to
+    alias_method :append, :wire_to
 
     # The node containing the currently selected in box.
     def in_node
@@ -145,7 +154,7 @@ module Kadath
 
     def append_network(network, i = nil, o = nil)
       # TODO do this on a clone of the appended network
-      # as this is changing the original networks ins & outs
+      # as this is changing the original network's ins & outs
       fail "Network does not have an out to connect to the network being attached" if !@out
       network.in = i if i
       fail "Network being attached does not have an in to connect this network to" if !network.in
@@ -155,7 +164,21 @@ module Kadath
         nil, 
         out: @out,
         in: network.in
-      )
+      )      
+      # if graph.nodes.empty?
+      #   # yuck
+      #   @in = network.in
+      #   @out = network.out
+      # else
+      #   fail "Network does not have an out to connect to the network being attached" if !@out
+      #   fail "Network being attached does not have an in to connect this network to" if !network.in
+      #   out_node.connect_to(
+      #     network.in_node,
+      #     nil, 
+      #     out: @out,
+      #     in: network.in
+      #   )
+      # end
       network.graph.nodes.each { |n| @graph.add(n) }
     end
 

@@ -38,4 +38,21 @@ describe PdBox do
     pdbox.has_out?(:bar).must_equal true
   end
 
+  it "has an id which is unique" do
+    pdb1 = PdBox.new("foo")
+    pdb2 = PdBox.new("bar")
+    pdb1.id.wont_equal pdb2.id
+  end
+
+  it "can be appended with another pdbox to create a network" do
+    pdb1 = PdBox.new("foo")
+    pdb2 = PdBox.new("bar")
+    n = pdb1 >~ pdb2
+    n.must_be_instance_of Network
+    n.in.must_equal 0
+    n.out.must_equal 0
+    n.graph.nodes.first.key.must_equal pdb1.id
+    n.graph.nodes.last.key.must_equal pdb2.id
+  end
+
 end

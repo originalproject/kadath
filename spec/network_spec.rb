@@ -22,6 +22,11 @@ describe Network do
     n.graph.nodes.first.key.must_equal "foo"
   end
 
+  # it "can be created without a box as an argument" do
+  #   n = Network.new
+  #   n.must_be_instance_of Network
+  # end
+
   it "has an out which defaults to the default out of the last box" do
     box = mock_box(default_out: :bar)
     n = Network.new(box)
@@ -93,6 +98,16 @@ describe Network do
     connection.properties[:out].must_equal :box1out
     connection.properties[:in].must_equal :box2in
   end
+
+  # it "when empty and connected to another network will just copy it" do
+  #   box = mock_box(default_in: :bar, default_out: :baz)
+  #   n1 = Network.new
+  #   n2 = Network.new(box)
+  #   n1 >~ n2
+  #   n1.graph.nodes.first.key.must_equal "foo"
+  #   n1.in.must_equal :bar
+  #   n1.out.must_equal :baz
+  # end
 
   it "raises an exception if in is set to a nonexistent in" do
     box = mock_box
