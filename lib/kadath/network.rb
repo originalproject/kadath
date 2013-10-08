@@ -9,39 +9,39 @@ module Kadath
 
     include WireToOperator
 
-    attr_reader :graph
+    attr_reader :graph, :in, :out
 
-    def initialize(box)
+    def initialize(box, options = {})
       @graph = Turbine::Graph.new
       @graph.add(Turbine::Node.new(box.id, box: box))
-      @out = box.default_out
-      @in = box.default_in
 
-      # if box
-      #   @graph.add(Turbine::Node.new(box.id, box: box))
-      #   @out = box.default_out
-      #   @in = box.default_in
-      # else
-      #   @in = @out = nil
-      # end
+      @out =
+        if (o = options[:out])
+          if box.has_out?(o)
+            o
+          else
+            fail "#{out_box.class.name} does not have an out with name #{name}"
+          end
+        else
+          box.default_out
+        end
 
-      # box = options[:box]
-      # if box 
-      #   @graph.add(Turbine::Node.new(box.id, box: box))
-      #   # Skip the has_out?/in? test when using box defaults
-      #   if options[:out]
-      #     self.out = options[:out]
-      #   else
-      #     @out = box.default_out
-      #   end
-      #   if options[:in]
-      #     self.in = options[:in]
-      #   else
-      #     @in = box.default_in
-      #   end
-      # end
+      @in =
+        if (i = options[:in])
+          if box.has_in?(i)
+            i
+          else
+           fail "#{out_box.class.name} does not have an in with name #{name}"
+          end
+        else
+          box.default_in
+        end
+
+      #@out = box.default_out
+      #@in = box.default_in
     end
 
+=begin
     # If invoked without a name, returns the currently selected
     # out of the out box.
     # If invoked with a name, sets the currently selected out of
@@ -85,6 +85,7 @@ module Kadath
         fail "#{out_box.class.name} does not have an in with name #{name}"
       end
     end
+=end
 
     # Append a box or network,
     # or array containing a box/network & specified ins/outs,
