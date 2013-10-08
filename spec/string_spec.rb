@@ -3,14 +3,13 @@ require 'minitest/autorun'
 require 'mocha/setup'
 
 require 'kadath/monkeypatches/string'
-require 'kadath/pd_box'
 
 describe String do
 
-  it "returns a PdBox when you precede it with a tilda" do
-    pdbox = ~"foo"
-    pdbox.must_be_instance_of Kadath::PdBox
-    pdbox.pd_object.must_equal "foo"
+  it "can create a PdBox and network it with other objects using the >~ superator" do
+    network = "foo" >~ "bar"
+    network.must_be_instance_of Kadath::Network
+    network.graph.nodes.first.properties[:box].pd_object.must_equal "foo"
   end
 
 end
