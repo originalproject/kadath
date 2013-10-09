@@ -9,7 +9,7 @@ module Kadath
 
     include WireToOperator
 
-    attr_reader :graph, :in, :out
+    attr_reader :graph, :inlet, :outlet
 
     class << self
 
@@ -56,34 +56,20 @@ module Kadath
 
     end
 
-    def initialize(box, options = {})
-      @graph = Turbine::Graph.new
-      @graph.add(Turbine::Node.new(box.id, box: box))
-
-      @out =
-        if (o = options[:out])
-          if box.has_out?(o)
-            o
-          else
-            fail "#{out_box.class.name} does not have an out with name #{name}"
-          end
-        else
-          box.default_out
-        end
-
-      @in =
-        if (i = options[:in])
-          if box.has_in?(i)
-            i
-          else
-           fail "#{out_box.class.name} does not have an in with name #{name}"
-          end
-        else
-          box.default_in
-        end
-
-      #@out = box.default_out
-      #@in = box.default_in
+    def initialize(options = {})
+      @graph = options[:graph]
+      @outlet = options[:outlet]
+      @inlet = options[:inlet]
+      
+      unless @graph && @graph.nodes.length > 0
+        fail "Network graph must contain at least 1 node"
+      end
+      if @inlet && !first_box.has_inlet?(@inlet)
+        fail "#{first_box.class.name} does not have an inlet with name #{@inlet}"
+      end
+      if @outlet && !last_box.has_outlet?(@outlet)
+        fail "#{last_box.class.name} does not have an outlet with name #{@outlet}"
+      end
     end
 
 =begin
@@ -149,8 +135,7 @@ module Kadath
     alias_method :<<, :wire_to
     alias_method :append, :wire_to
 
-    # The node containing the currently selected in box.
-    def in_node
+    def first_node
       @graph.nodes.first
     end
 
@@ -287,16 +272,16 @@ module Kadath
       thing.respond_to?(:default_in)
     end
 
-    def out_node
+    def last_node
       @graph.nodes.last
     end
 
-    def in_box
-      in_node.properties[:box]
+    def first_box
+      first_node.properties[:box]
     end
 
-    def out_box
-      out_node.properties[:box]
+    def last_box
+      last_node.properties[:box]
     end
 
   end
