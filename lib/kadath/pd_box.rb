@@ -19,19 +19,19 @@ module Kadath
       object_id
     end
 
-    def default_in
+    def default_inlet
       0
     end
 
-    def default_out
+    def default_outlet
       0
     end
 
-    def has_in?(_)
+    def has_inlet?(_)
       true
     end
 
-    def has_out?(_)
+    def has_outlet?(_)
       true
     end
 
