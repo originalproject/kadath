@@ -11,6 +11,51 @@ module Kadath
 
     attr_reader :graph, :in, :out
 
+    class << self
+
+      def from_box(box)
+        from_box_with_connectors(box, nil, nil)
+      end
+
+      def from_string(pd_string)
+        from_string_with_connectors(pd_string, nil, nil)
+      end
+
+      # Array must be in format:
+      # [inlet, bson, outlet]
+      # [inlet, bson]
+      # [bson, outlet]
+      # [bson] <- stupid but possible
+      # where bson is a box, string or network
+      #
+      # TODO make this code less shit
+      def from_array(arr)
+        inlet = nil
+        outlet = nil
+        case arr.length
+        when 1
+          bson = arr.first
+        when 2
+          if arr.first.is_a?(Symbol)
+            inlet = arr.first
+            bson = arr[1]
+          else
+            bson = arr.first
+            outlet = arr[1]
+          end
+        when 3
+          inlet = arr.first
+          bson = arr[1]
+          outlet = arr[2]
+        else
+          fail "Appended arrays must have between 1 and 3 items"
+        end
+
+        from_bson_with_connectors(bson, inlet, outlet)
+      end
+
+    end
+
     def initialize(box, options = {})
       @graph = Turbine::Graph.new
       @graph.add(Turbine::Node.new(box.id, box: box))
@@ -110,6 +155,42 @@ module Kadath
     end
 
     private
+
+    class << self
+
+      # BSON stands for Box String Or Network
+      def from_bson_with_connectors(bson, inlet, outlet)
+        if bson.is_a?(String)
+          from_string_with_connectors(bson, inlet, outlet)
+        elsif bson.respond_to?(:graph)
+          from_network_with_connectors(bson, inlet, outlet)
+        elsif bson.respond_to?(:id)
+          from_box_with_connectors(bson, inlet, outlet)
+        else
+          fail "Cannot create network from #{bson.class.name}"
+        end
+      end
+
+      def from_network_with_connectors(network, inlet, outlet)
+        from_graph_with_connectors(network.graph, inlet, outlet)
+      end
+
+      def from_box_with_connectors(box, inlet, outlet)
+        graph = Turbine::Graph.new
+        graph.add(Turbine::Node.new(box.id, box: box))
+        from_graph_with_connectors(graph, inlet, outlet)
+      end
+
+      def from_string_with_connectors(pd_string, inlet, outlet)
+        pd_box = PdBox.new(pd_string)
+        from_box_with_connectors(pd_box, inlet, outlet)
+      end
+
+      def from_graph_with_connectors(graph, inlet, outlet)
+        Network.new(graph: graph, inlet: inlet, outlet: outlet)        
+      end
+
+    end
 
     def append_thing(thing, i = nil, o = nil)
       if is_network?(thing)
