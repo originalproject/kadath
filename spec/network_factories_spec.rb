@@ -6,14 +6,28 @@ require 'kadath/network'
 
 include Kadath
 
-class Network
-  attr_reader :options
-  def initialize(options)
-    @options = options
-  end
-end
-
 describe Network do
+
+  # TODO remove this horrible monkey patching shit and replace with
+  # a proper stub. Currently I cannot figure out how to stub a method
+  # with mocha so I can get the parameters the method was called with.
+  before do
+    # intercept Network.new and save parameters
+    class Network
+      alias :old_initialize :initialize
+      attr_reader :options
+      def initialize(options)
+        @options = options
+      end
+    end
+  end
+
+  after do
+    # undo Network monkeypatch
+    class Network
+      alias :initialize :old_initialize
+    end
+  end
 
   it "can create a network from a box" do
     box = mock

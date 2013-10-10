@@ -36,7 +36,7 @@ module Kadath
     end
 
     def wire_to(thing)
-      n = Network.new(self)
+      n = Network.from_box(self)
       n.wire_to(thing)
     end
 
