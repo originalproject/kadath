@@ -4,219 +4,181 @@ require_relative 'wire_to_operator'
 require_relative 'pd_box'
 
 module Kadath
-
   class Network
 
     include WireToOperator
 
     attr_reader :graph
 
-    def initialize(box)
-      @graph = Turbine::Graph.new
-      @graph.add(Turbine::Node.new(box.id, box: box))
-      @out = box.default_out
-      @in = box.default_in
+    class << self
 
-      # if box
-      #   @graph.add(Turbine::Node.new(box.id, box: box))
-      #   @out = box.default_out
-      #   @in = box.default_in
-      # else
-      #   @in = @out = nil
-      # end
-
-      # box = options[:box]
-      # if box 
-      #   @graph.add(Turbine::Node.new(box.id, box: box))
-      #   # Skip the has_out?/in? test when using box defaults
-      #   if options[:out]
-      #     self.out = options[:out]
-      #   else
-      #     @out = box.default_out
-      #   end
-      #   if options[:in]
-      #     self.in = options[:in]
-      #   else
-      #     @in = box.default_in
-      #   end
-      # end
-    end
-
-    # If invoked without a name, returns the currently selected
-    # out of the out box.
-    # If invoked with a name, sets the currently selected out of
-    # the out box and returns the network for chaining.
-    def out(name = nil)
-      if !name
-        @out
-      else
-        self.out = name
-        self
+      def from_box(box)
+        from_box_with_connectors(box, nil, nil)
       end
-    end
 
-    # Sets the currently selected out of the out box
-    def out=(name)
-      if out_box.has_out?(name)
-        @out = name
-      else
-        fail "#{out_box.class.name} does not have an out with name #{name}"
+      def from_string(pd_string)
+        from_string_with_connectors(pd_string, nil, nil)
       end
-    end
 
-    # If invoked without a name, returns the currently selected
-    # in of the in box.
-    # If invoked with a name, sets the currently selected in of
-    # the in box and returns the network for chaining.
-    def in(name = nil)
-      if !name
-        @in
-      else
-        self.in = name
-        self
+      # Array must be in format:
+      # [inlet, bson, outlet]
+      # [inlet, bson]
+      # [bson, outlet]
+      # [bson] <- stupid but possible
+      # where bson is a box, string or network
+      #
+      # TODO make this code less shit
+      def from_array(arr)
+        inlet = nil
+        outlet = nil
+        case arr.length
+        when 1
+          bson = arr.first
+        when 2
+          if arr.first.is_a?(Symbol)
+            inlet = arr.first
+            bson = arr[1]
+          else
+            bson = arr.first
+            outlet = arr[1]
+          end
+        when 3
+          inlet = arr.first
+          bson = arr[1]
+          outlet = arr[2]
+        else
+          fail "Appended arrays must have between 1 and 3 items"
+        end
+
+        from_bson(bson, inlet, outlet)
       end
+
     end
 
-    # Sets the currently selected in of the in box
-    def in=(name)
-      if in_box.has_in?(name)
-        @in = name
-      else
-        fail "#{out_box.class.name} does not have an in with name #{name}"
-      end
+    def inlet
+      @inlet || first_box.default_inlet
     end
 
-    # Append a box or network,
-    # or array containing a box/network & specified ins/outs,
-    # attaching the out of this network to the in of the merged network,
-    # and then return this network for chaining.
-    # Raises an error if either of the required connection points
-    # are nil.
+    def outlet
+      @outlet || last_box.default_outlet
+    end
+
+    # Append a box, string, or array.
+    # Attaches the out of this network to the in of the merged network,
+    # and then return the new network for chaining.
     def wire_to(thing)
-      if is_array?(thing)
-        append_array(thing)
-      else
-        append_thing(thing)
-      end
-      self
+      appended_network =
+        if thing.respond_to?(:graph)
+          thing
+        else
+          Network.from_anything(thing)
+        end
+      Network.merge(self, appended_network)
     end
-    alias_method :<<, :wire_to
-    alias_method :append, :wire_to
 
-    # The node containing the currently selected in box.
-    def in_node
+    def first_node
       @graph.nodes.first
+    end
+
+    def first_box
+      first_node.properties[:box]
+    end
+
+    def last_node
+      @graph.nodes.last
+    end
+
+    def last_box
+      last_node.properties[:box]
     end
 
     private
 
-    def append_thing(thing, i = nil, o = nil)
-      if is_network?(thing)
-        append_network(thing, i, o)
-      elsif is_box?(thing)
-        append_box(thing, i, o)
-      elsif thing.is_a?(String)
-        append_string(thing, i, o)
-      else
-        fail "Cannot add #{thing.class.name} to network"
-      end
-    end
+    class << self
 
-    # Appended arrays should be in formats:
-    # [in, box, out]
-    # [in, box]
-    # [box, out]
-    # [box] <- stupid but possible
-    #
-    # TODO make this code less shit
-    def append_array(arr)
-      i = nil
-      o = nil
-      case arr.length
-      when 0
-        return
-      when 1
-        thing = arr.first
-      when 2
-        if(is_network?(arr.first) || is_box?(arr.first))
-          thing = arr.first
-          o = arr[1]
+      def from_anything(thing)
+        if thing.respond_to?(:each)
+          from_array(thing)
         else
-          i = arr.first
-          thing = arr[1]
+          from_bson(thing)
         end
-      when 3
-        i = arr.first
-        thing = arr[1]
-        o = arr[2]
-      else
-        fail "Appended arrays must have between 1 and 3 items"
       end
-      append_thing(thing, i, o)
+
+      # BSON stands for Box String Or Network
+      def from_bson(bson, inlet = nil, outlet = nil)
+        if bson.is_a?(String)
+          from_string_with_connectors(bson, inlet, outlet)
+        elsif bson.respond_to?(:graph)
+          from_network_with_connectors(bson, inlet, outlet)
+        elsif bson.respond_to?(:id)
+          from_box_with_connectors(bson, inlet, outlet)
+        else
+          fail "Cannot create network from #{bson.class.name}"
+        end
+      end
+
+      def from_network_with_connectors(network, inlet, outlet)
+        from_graph_with_connectors(network.graph, inlet, outlet)
+      end
+
+      def from_box_with_connectors(box, inlet, outlet)
+        graph = Turbine::Graph.new
+        graph.add(Turbine::Node.new(box.id, box: box))
+        from_graph_with_connectors(graph, inlet, outlet)
+      end
+
+      def from_string_with_connectors(pd_string, inlet, outlet)
+        pd_box = PdBox.new(pd_string)
+        from_box_with_connectors(pd_box, inlet, outlet)
+      end
+
+      def from_graph_with_connectors(graph, inlet, outlet)
+        Network.new(graph: graph, inlet: inlet, outlet: outlet)        
+      end
+
+      def merge(network_1, network_2)
+        if !network_1.outlet
+          fail "Network does not have an out to connect to the network being attached"
+        end
+        if !network_2.inlet
+          fail "Network being attached does not have an in to connect this network to"
+        end
+
+        network_1.last_node.connect_to(
+          network_2.first_node,
+          nil,
+          outlet: network_1.outlet,
+          inlet: network_2.inlet
+        )
+
+        graph = Turbine::Graph.new
+        (network_1.graph.nodes + network_2.graph.nodes).each do |node|
+          graph.add(node)
+        end
+        from_graph_with_connectors(graph, network_1.inlet, network_2.outlet)
+      end
+
     end
 
-    def append_network(network, i = nil, o = nil)
-      # TODO do this on a clone of the appended network
-      # as this is changing the original network's ins & outs
-      fail "Network does not have an out to connect to the network being attached" if !@out
-      network.in = i if i
-      fail "Network being attached does not have an in to connect this network to" if !network.in
-      network.out = o if o
-      out_node.connect_to(
-        network.in_node,
-        nil, 
-        out: @out,
-        in: network.in
-      )      
-      # if graph.nodes.empty?
-      #   # yuck
-      #   @in = network.in
-      #   @out = network.out
-      # else
-      #   fail "Network does not have an out to connect to the network being attached" if !@out
-      #   fail "Network being attached does not have an in to connect this network to" if !network.in
-      #   out_node.connect_to(
-      #     network.in_node,
-      #     nil, 
-      #     out: @out,
-      #     in: network.in
-      #   )
-      # end
-      network.graph.nodes.each { |n| @graph.add(n) }
-    end
+    def initialize(options = {})
+      @graph = options[:graph]
+      @outlet = options[:outlet]
+      @inlet = options[:inlet]
+      
+      unless @graph && @graph.nodes.length > 0
+        fail "Network graph must contain at least 1 node"
+      end
 
-    def append_box(box, i = nil, o = nil)
-      append_network(Network.new(box), i, o)
-    end
+      @inlet = nil if @inlet == first_box.default_inlet
+      if @inlet && !first_box.has_inlet?(@inlet)
+        fail "#{first_box.class.name} does not have an inlet with name #{@inlet}"
+      end
 
-    def append_string(s, i = nil, o = nil)
-      append_box(PdBox.new(s), i, o)
-    end
-
-    def is_network?(thing)
-      thing.respond_to?(:in_node)
-    end
-
-    def is_array?(thing)
-      thing.respond_to?(:each)
-    end
-
-    def is_box?(thing)
-      thing.respond_to?(:default_in)
-    end
-
-    def out_node
-      @graph.nodes.last
-    end
-
-    def in_box
-      in_node.properties[:box]
-    end
-
-    def out_box
-      out_node.properties[:box]
+      @outlet = nil if @outlet == last_box.default_outlet
+      if @outlet && !last_box.has_outlet?(@outlet)
+        fail "#{last_box.class.name} does not have an outlet with name #{@outlet}"
+      end
     end
 
   end
-
 end
