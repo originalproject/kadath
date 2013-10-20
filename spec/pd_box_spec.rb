@@ -1,10 +1,5 @@
-require 'minitest/spec'
-require 'minitest/autorun'
-require 'mocha/setup'
-
 require 'kadath/pd_box'
-
-include Kadath
+require_relative 'spec_helper'
 
 describe PdBox do
 

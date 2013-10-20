@@ -1,8 +1,5 @@
-require 'minitest/spec'
-require 'minitest/autorun'
-require 'mocha/setup'
-
 require 'kadath/monkeypatches/string'
+require_relative 'spec_helper'
 
 describe String do
 
