@@ -1,9 +1,5 @@
-require 'minitest/spec'
-require 'minitest/autorun'
-
 require 'kadath/renderable'
-
-include Kadath
+require_relative 'spec_helper'
 
 class Harness
   include Renderable

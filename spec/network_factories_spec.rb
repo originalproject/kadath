@@ -1,10 +1,5 @@
-require 'minitest/spec'
-require 'minitest/autorun'
-require 'mocha/setup'
-
 require 'kadath/network'
-
-include Kadath
+require_relative 'spec_helper'
 
 describe Network do
 
