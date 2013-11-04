@@ -25,4 +25,5 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "turbine-graph"
   spec.add_dependency "superators19"
+  spec.add_dependency "jrpd"
 end
