@@ -92,6 +92,23 @@ module Kadath
       last_node.properties[:box]
     end
 
+    def each_box
+      @graph.nodes.each { |node| yield(node.properties[:box]) }
+    end
+
+    def each_connection
+      @graph.nodes.each do |node|
+        node.out_edges.each do |out_edge|
+          yield(
+            out_edge.from.properties[:box],
+            out_edge.properties[:outlet],
+            out_edge.to.properties[:box],
+            out_edge.properties[:inlet]
+          )
+        end
+      end
+    end
+
     private
 
     class << self

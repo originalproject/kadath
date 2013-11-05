@@ -171,4 +171,24 @@ describe Network do
     pdb.pd_object.must_equal "faz"
   end
 
+  it "has an each_box method which yields each of its boxes in turn" do
+    box1 = mock_box(id: "box1", d_in: :poo, d_out: :bar)
+    box2 = mock_box(id: "box2", d_in: :baz, d_out: :pah)
+    n1 = Network.from_box(box1)
+    n = n1 >~ box2
+    boxes = []
+    n.each_box { |box| boxes << box }
+    boxes.must_equal [box1, box2]
+  end
+
+  it "has an each_connection method which yields each of its connections in turn" do
+    box1 = mock_box(id: "box1", d_in: 0, d_out: 0)
+    box2 = mock_box(id: "box2", d_in: 0, d_out: 0)
+    n1 = Network.from_box(box1)
+    n = n1 >~ box2
+    connections = []
+    n.each_connection { |a, b, c, d| connections << [a, b, c, d] }
+    connections.must_equal [[box1, 0, box2, 0]]
+  end
+
 end

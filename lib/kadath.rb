@@ -1,4 +1,4 @@
-# require_relative 'kadath/monkeypatches/string'
+require_relative 'kadath/monkeypatches/string'
 # require_relative 'kadath/network'
 # require_relative 'kadath/pd_box'
 # require_relative 'kadath/renderable'
@@ -15,12 +15,17 @@ module Kadath
         # REVIEW Is this bad? I don't want to require the default renderer
         # at the top of the file if it's never actually going to be used
         require_relative 'kadath/pd_renderer'
-        PdRenderer.new
+        require_relative 'kadath/jrpd_connector'
+        PdRenderer.new(JRPDConnector.new)
       end
   end
 
   def self.render(network)
     renderer.render(network)
+  end
+
+  def self.gem_root
+    @gem_root ||= Gem::Specification.find_by_name("kadath").gem_dir
   end
 
 end
