@@ -25,7 +25,7 @@ module Kadath
   end
 
   def self.gem_root
-    Gem::Specification.find_by_name("kadath").gem_dir
+    @gem_root ||= Gem::Specification.find_by_name("kadath").gem_dir
   end
 
 end
