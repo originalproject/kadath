@@ -3,12 +3,9 @@ require 'jrpd'
 module Kadath
   class JRPDConnector
 
-    KADATH_PD_FILE_PATH = (
-      Pathname.new(__FILE__).parent.parent.parent + "data" + "kadath.pd"
-    ).to_s
-
     def initialize
-      @patch = JRPD::Patch.new(KADATH_PD_FILE_PATH)
+      pd_file_path = File.join(Kadath.gem_root, 'data/kadath.pd')
+      @patch = JRPD::Patch.new(pd_file_path)
     end
 
     def send_to_patch(unstructured_msg)
