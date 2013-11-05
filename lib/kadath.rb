@@ -1,4 +1,4 @@
-# require_relative 'kadath/monkeypatches/string'
+require_relative 'kadath/monkeypatches/string'
 # require_relative 'kadath/network'
 # require_relative 'kadath/pd_box'
 # require_relative 'kadath/renderable'

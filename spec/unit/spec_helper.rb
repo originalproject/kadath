@@ -1,11 +1,7 @@
-require 'minitest/spec'
-#require 'minitest/autorun'
-# use turn if installed
-require 'turn/autorun'
+require_relative '../spec_helper.rb'
 require 'mocha/setup'
-include Kadath
 
-Turn.config.format = :progress
+include Kadath
 
 def publicize_class(klass)
   klass.class_eval do
