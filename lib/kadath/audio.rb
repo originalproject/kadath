@@ -3,7 +3,9 @@ module Kadath
 
     extend Forwardable
 
-    def_delegators :@connector, :start_audio, :stop_audio
+    def_delegator :@connector, :start_audio, :start
+
+    def_delegator :@connector, :stop_audio, :stop
 
     def initialize(pd_connector)
       @connector = pd_connector

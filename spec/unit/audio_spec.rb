@@ -7,16 +7,16 @@ describe Audio do
     a = Audio.new('foo')
   end
 
-  it "delegates the start_audio command to the Pd connector" do
+  it "delegates the start command to the Pd connector start_audio" do
     pdc = mock(start_audio: nil)
     a = Audio.new(pdc)
-    a.start_audio
+    a.start
   end
 
-  it "delegates the stop_audio command to the Pd connector" do
+  it "delegates the stop command to the Pd connector stop_audio" do
     pdc = mock(stop_audio: nil)
     a = Audio.new(pdc)
-    a.stop_audio
+    a.stop
   end
 
 end

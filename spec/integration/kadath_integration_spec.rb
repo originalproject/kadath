@@ -8,4 +8,12 @@ describe "KADATH" do
     Kadath.render(network)
   end
 
+  it "can apparently render a simple audio network and play its output" do
+    network = "osc~ 440" >~ "dac~"
+    Kadath.render(network)
+    Kadath.start_audio
+    sleep(1)
+    Kadath.stop_audio
+  end
+
 end
