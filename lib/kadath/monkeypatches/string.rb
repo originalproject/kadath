@@ -1,6 +1,6 @@
 require 'superators19'
 
-require_relative '../pd_box'
+require_relative '../pd/box'
 
 class String
 

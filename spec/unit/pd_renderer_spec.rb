@@ -1,4 +1,4 @@
-require 'kadath/pd_renderer'
+require 'kadath/pd/pd_renderer'
 require_relative 'spec_helper'
 
 def stub_network

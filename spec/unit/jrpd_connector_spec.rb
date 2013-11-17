@@ -1,4 +1,4 @@
-require 'kadath/jrpd_connector'
+require 'kadath/pd/jrpd_connector'
 require_relative 'spec_helper'
 
 describe JRPDConnector do
