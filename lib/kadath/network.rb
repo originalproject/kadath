@@ -16,16 +16,12 @@ module Kadath
         from_box_with_connectors(box, nil, nil)
       end
 
-      def from_string(pd_string)
-        from_string_with_connectors(pd_string, nil, nil)
-      end
-
       # Array must be in format:
-      # [inlet, bson, outlet]
-      # [inlet, bson]
-      # [bson, outlet]
-      # [bson] <- stupid but possible
-      # where bson is a box, string or network
+      # [inlet, bon, outlet]
+      # [inlet, bon]
+      # [bon, outlet]
+      # [bon] <- stupid but possible
+      # where bon is a box or network
       #
       # TODO make this code less shit
       def from_array(arr)
@@ -33,24 +29,24 @@ module Kadath
         outlet = nil
         case arr.length
         when 1
-          bson = arr.first
+          bon = arr.first
         when 2
           if arr.first.is_a?(Symbol)
             inlet = arr.first
-            bson = arr[1]
+            bon = arr[1]
           else
-            bson = arr.first
+            bon = arr.first
             outlet = arr[1]
           end
         when 3
           inlet = arr.first
-          bson = arr[1]
+          bon = arr[1]
           outlet = arr[2]
         else
           fail "Appended arrays must have between 1 and 3 items"
         end
 
-        from_bson(bson, inlet, outlet)
+        from_bon(bon, inlet, outlet)
       end
 
     end
@@ -117,20 +113,18 @@ module Kadath
         if thing.respond_to?(:each)
           from_array(thing)
         else
-          from_bson(thing)
+          from_bon(thing)
         end
       end
 
-      # BSON stands for Box String Or Network
-      def from_bson(bson, inlet = nil, outlet = nil)
-        if bson.is_a?(String)
-          from_string_with_connectors(bson, inlet, outlet)
-        elsif bson.respond_to?(:graph)
-          from_network_with_connectors(bson, inlet, outlet)
-        elsif bson.respond_to?(:id)
-          from_box_with_connectors(bson, inlet, outlet)
+      # BON stands for Box Or Network
+      def from_bon(bon, inlet = nil, outlet = nil)
+        if bon.respond_to?(:graph)
+          from_network_with_connectors(bon, inlet, outlet)
+        elsif bon.respond_to?(:id)
+          from_box_with_connectors(bon, inlet, outlet)
         else
-          fail "Cannot create network from #{bson.class.name}"
+          fail "Cannot create network from #{bon.class.name}"
         end
       end
 
@@ -142,11 +136,6 @@ module Kadath
         graph = Turbine::Graph.new
         graph.add(Turbine::Node.new(box.id, box: box))
         from_graph_with_connectors(graph, inlet, outlet)
-      end
-
-      def from_string_with_connectors(pd_string, inlet, outlet)
-        pd_box = Pd::Box.new(pd_string)
-        from_box_with_connectors(pd_box, inlet, outlet)
       end
 
       def from_graph_with_connectors(graph, inlet, outlet)

@@ -161,16 +161,6 @@ describe Network do
     n.outlet.must_equal :box2out
   end
 
-  it "can connect a string which is turned into a Pd::Box" do
-    box = mock_box(id: "box1", d_out: :bar)
-    n = Network.from_box(box)
-    n >~ "faz"
-    n.first_node.key.must_equal "box1"
-    pdb = n.first_node.out.first.properties[:box]
-    pdb.must_be_instance_of Pd::Box
-    pdb.pd_object.must_equal "faz"
-  end
-
   it "has an each_box method which yields each of its boxes in turn" do
     box1 = mock_box(id: "box1", d_in: :poo, d_out: :bar)
     box2 = mock_box(id: "box2", d_in: :baz, d_out: :pah)

@@ -32,14 +32,6 @@ describe Network do
     network.options[:graph].nodes.first.key.must_equal "foo"
   end
 
-  it "can create a network from a string" do
-    network = Network.from_string("foo")
-    network.must_be_instance_of Network
-    box = network.options[:graph].nodes.first.properties[:box]
-    box.must_be_instance_of Pd::Box
-    box.pd_object.must_equal "foo"
-  end
-
   it "can create a network from an array of [inlet, box, outlet]" do
     box = mock
     box.expects(:id).returns("foo")
@@ -65,16 +57,6 @@ describe Network do
     network = Network.from_array([box, :baz])
     network.must_be_instance_of Network
     network.options[:graph].nodes.first.key.must_equal "foo"
-    network.options[:outlet].must_equal :baz
-  end
-
-  it "can create a network from an array of [inlet, string, outlet]" do
-    network = Network.from_array([:bar, "foo", :baz])
-    network.must_be_instance_of Network
-    box = network.options[:graph].nodes.first.properties[:box]
-    box.must_be_instance_of Pd::Box
-    box.pd_object.must_equal "foo"
-    network.options[:inlet].must_equal :bar
     network.options[:outlet].must_equal :baz
   end
 
