@@ -1,5 +1,5 @@
 require_relative 'kadath/monkeypatches/string'
-require_relative 'kadath/pd/pd_renderer'
+require_relative 'kadath/pd/renderer'
 require_relative 'kadath/audio'
 require_relative 'kadath/pd/jrpd_connector'
 
