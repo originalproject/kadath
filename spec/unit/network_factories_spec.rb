@@ -36,7 +36,7 @@ describe Network do
     network = Network.from_string("foo")
     network.must_be_instance_of Network
     box = network.options[:graph].nodes.first.properties[:box]
-    box.must_be_instance_of PdBox
+    box.must_be_instance_of Pd::Box
     box.pd_object.must_equal "foo"
   end
 
@@ -72,7 +72,7 @@ describe Network do
     network = Network.from_array([:bar, "foo", :baz])
     network.must_be_instance_of Network
     box = network.options[:graph].nodes.first.properties[:box]
-    box.must_be_instance_of PdBox
+    box.must_be_instance_of Pd::Box
     box.pd_object.must_equal "foo"
     network.options[:inlet].must_equal :bar
     network.options[:outlet].must_equal :baz

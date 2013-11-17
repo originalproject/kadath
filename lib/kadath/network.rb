@@ -1,7 +1,7 @@
 require 'turbine'
 
 require_relative 'wire_to_operator'
-require_relative 'pd_box'
+require_relative 'pd/box'
 
 module Kadath
   class Network
@@ -145,7 +145,7 @@ module Kadath
       end
 
       def from_string_with_connectors(pd_string, inlet, outlet)
-        pd_box = PdBox.new(pd_string)
+        pd_box = Pd::Box.new(pd_string)
         from_box_with_connectors(pd_box, inlet, outlet)
       end
 

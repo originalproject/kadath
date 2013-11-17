@@ -1,12 +1,7 @@
 require_relative 'kadath/monkeypatches/string'
-require_relative 'kadath/pd_renderer'
+require_relative 'kadath/pd/renderer'
 require_relative 'kadath/audio'
-require_relative 'kadath/jrpd_connector'
-# require_relative 'kadath/network'
-# require_relative 'kadath/pd_box'
-# require_relative 'kadath/renderable'
-# require_relative 'kadath/version'
-# require_relative 'kadath/wire_to_operator'
+require_relative 'kadath/pd/jrpd_connector'
 
 module Kadath
 
@@ -25,7 +20,7 @@ module Kadath
   private
 
   def self.renderer
-    @renderer ||= PdRenderer.new(connector)
+    @renderer ||= Pd::Renderer.new(connector)
   end
 
   def self.audio
@@ -33,7 +28,7 @@ module Kadath
   end
 
   def self.connector
-    @connector ||= JRPDConnector.new
+    @connector ||= Pd::JRPDConnector.new
   end
 
 end
