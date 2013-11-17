@@ -2,8 +2,8 @@ require_relative '../wire_to_operator'
 require_relative '../network'
 
 module Kadath
-module Pd
-  class Box
+module Boxes
+  class Pd
 
     include WireToOperator
 
@@ -11,7 +11,7 @@ module Pd
 
     def initialize(pd_object)
       if !pd_object
-        fail "Pd::Box must be instantiated with a valid Pd object string"
+        fail "Boxes::Pd must be instantiated with a valid Pd object string"
       end
       @pd_object = pd_object
     end
