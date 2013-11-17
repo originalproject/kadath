@@ -2,7 +2,8 @@ require_relative '../wire_to_operator'
 require_relative '../network'
 
 module Kadath
-  class PdBox
+module Pd
+  class Box
 
     include WireToOperator
 
@@ -41,4 +42,5 @@ module Kadath
     end
 
   end
+end
 end

@@ -145,7 +145,7 @@ module Kadath
       end
 
       def from_string_with_connectors(pd_string, inlet, outlet)
-        pd_box = PdBox.new(pd_string)
+        pd_box = Pd::Box.new(pd_string)
         from_box_with_connectors(pd_box, inlet, outlet)
       end
 
