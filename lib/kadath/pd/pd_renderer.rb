@@ -1,5 +1,6 @@
 module Kadath
-  class PdRenderer
+module Pd
+  class Renderer
 
     def initialize(pd_connector = nil)
       @connector = pd_connector
@@ -91,4 +92,5 @@ module Kadath
     end
 
   end
+end
 end
