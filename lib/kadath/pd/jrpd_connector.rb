@@ -1,6 +1,7 @@
 require 'jrpd'
 
 module Kadath
+module Pd
   class JRPDConnector
 
     def send_to_patch(unstructured_msg)
@@ -31,4 +32,5 @@ module Kadath
     end
 
   end
+end
 end

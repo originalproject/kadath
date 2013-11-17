@@ -33,7 +33,7 @@ module Kadath
   end
 
   def self.connector
-    @connector ||= JRPDConnector.new
+    @connector ||= Pd::JRPDConnector.new
   end
 
 end
