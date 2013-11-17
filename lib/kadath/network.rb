@@ -1,7 +1,7 @@
 require 'turbine'
 
 require_relative 'wire_to_operator'
-require_relative 'pd/box'
+require_relative 'boxes/pd'
 
 module Kadath
   class Network

@@ -1,4 +1,4 @@
-require 'kadath/pd/box'
+require 'kadath/boxes/pd'
 require_relative 'spec_helper'
 
 describe Pd::Box do
