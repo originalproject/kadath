@@ -1,5 +1,6 @@
 require_relative '../spec_helper.rb'
-require 'mocha/setup'
+#require 'mocha/setup'
+require 'rr'
 
 include Kadath
 
