@@ -5,13 +5,15 @@ require_relative 'spec_helper'
 describe "KADATH" do
   
   it "can apparently render a simple audio network" do
-    network = Kadath::Boxes::Pd.new("osc~ 440") >~ Kadath::Boxes::Pd.new("dac~")
-    Kadath.render(network)
+    Kadath.render {
+      pd('osc~ 440') >~ pd('dac~')
+    }
   end
 
   it "can apparently render a simple audio network and play its output" do
-    network = Kadath::Boxes::Pd.new("osc~ 440") >~ Kadath::Boxes::Pd.new("dac~")
-    Kadath.render(network)
+    Kadath.render {
+      pd('osc~ 440') >~ pd('dac~')
+    }
     Kadath.start_audio
     sleep(1)
     Kadath.stop_audio

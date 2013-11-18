@@ -3,21 +3,39 @@ require_relative 'spec_helper'
 
 describe Kadath do
   
-  # it "defaults to a Pd::Renderer using Pd::JRPDConnector" do
-  #   Kadath::Pd::JRPDConnector.expects(:new).returns('foo')
-  #   Kadath::Pd::Renderer.expects(:new).with('foo').returns('bar')
-  #   Kadath.send(:renderer).must_equal 'bar'
-  # end
+  before do
+    stub(Pd::JRPDConnector).new { 'connector' }
+    @stub_renderer = Object.new
+    stub(@stub_renderer).render('something')
+    stub(Pd::Renderer).new('connector') { @stub_renderer }
+  end
+
+  after do
+    # reset module variables
+    Kadath.instance_variable_set(:@renderer, nil)
+    Kadath.instance_variable_set(:@connector, nil)
+    Kadath.instance_variable_set(:@audio, nil)
+    Kadath.instance_variable_set(:@gem_root, nil)
+    Kadath.instance_variable_set(:@inventory, nil)
+  end
 
   it "can render something by delegating to the default renderer" do
-    renderer = mock(render: "awooga")
-    Kadath::Pd::JRPDConnector.expects(:new).returns('foo')
-    Kadath::Pd::Renderer.expects(:new).with('foo').returns(renderer)
-    Kadath.render("something").must_equal "awooga"
+    Kadath.render('something')
+    assert_received(@stub_renderer) { |r| r.render('something') }
+  end
 
-    # Fix problem with Mocha leaking mocks between tests :(
-    Kadath::Pd::JRPDConnector.unstub(:new)
-    Kadath::Pd::Renderer.unstub(:new)
+  it "can render the output of a block to the default renderer" do
+    Kadath.render { 'something' }
+    assert_received(@stub_renderer) { |r| r.render('something') }
+  end
+
+  it "can render a block which it runs in the context of an Inventory" do
+    inv = Object.new
+    stub(inv).pd('foo') { 'something' }
+    stub(Inventory).new { inv }
+    Kadath.render { pd('foo') }
+    assert_received(inv) { |i| i.pd('foo') }    
+    assert_received(@stub_renderer) { |r| r.render('something') }
   end
 
   it "can return the Kadath gem root directory path" do
@@ -26,15 +44,15 @@ describe Kadath do
   end
 
   it "can start & stop audio by delegating to the default audio object" do
-    mock_audio = mock(start: nil, stop: nil)
-    Kadath::Pd::JRPDConnector.stubs(:new).returns('foo')
-    Kadath::Audio.expects(:new).with('foo').returns(mock_audio)
+    stub(Pd::JRPDConnector).new { 'connector' }
+    audio = Object.new
+    stub(audio).start
+    stub(audio).stop
+    stub(Audio).new('connector') { audio }
     Kadath.start_audio
+    assert_received(audio) { |a| a.start }
     Kadath.stop_audio
-
-    # Fix problem with Mocha leaking mocks between tests :(
-    Kadath::Pd::JRPDConnector.unstub(:new)
-    Kadath::Audio.unstub(:new)
+    assert_received(audio) { |a| a.stop }
   end
 
 end
